@@ -1,0 +1,12 @@
+&lt;div&gt;
+  &lt;form etc=&#39;POST&#39; name=&#39;/something.cgi&#39;&gt;
+    &lt;div&gt;
+      &lt;input name=&#39;hello&#39; /&gt;
+      &lt;nested type=&#39;Foo&#39;&gt;
+        &lt;div&gt;
+          &lt;input name=&#39;hello&#39; /&gt;
+        &lt;/div&gt;
+      &lt;/nested&gt;
+    &lt;/div&gt;
+  &lt;/form&gt;
+&lt;/div&gt;

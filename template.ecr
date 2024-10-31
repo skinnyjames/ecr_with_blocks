@@ -1,0 +1,12 @@
+<div>
+  <%| form("POST", "/something.cgi") do |f| %>
+    <div>
+      <%= f.input("hello") %>
+      <%| f.nested("Foo") do |inner| %>
+        <div>
+          <%= inner.input("hello") %>
+        </div>
+      <%/ end %>
+    </div>
+  <%/ end %>
+</div>
