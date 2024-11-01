@@ -5,6 +5,8 @@ module ECR
 
   DefaultBufferName = "__str__"
   DefaultProcName = "__proc__"
+  BlockParamPattern = /(\|[^|]+)\|\s*$/
+  BlockPattern = /(do|\{)\s*$/
 
   # :nodoc:
   def process_file(filename, buffer_name = DefaultBufferName) : String
@@ -15,7 +17,7 @@ module ECR
   def process_string(string, filename, buffer_name = DefaultBufferName) : String
     lexer = Lexer.new string
     token = lexer.next_token
-    stack = [] of Symbol
+    stack = [] of Nil
 
     String.build do |str|
       while true
@@ -73,19 +75,26 @@ module ECR
           str << "#<loc:push>"
           append_loc(str, filename, line_number, column_number)
           str << ' ' unless string.starts_with?(' ')
-          if string =~ /\|\s*$/ 
-            str << string.gsub(/\|?([^|*])\|?$/, "\\1, io|")
-          else
-            str << string
-            str << " |#{buffer_name}|"
-          end
+
+          append_io_param(str, string, buffer_name)
+
           str << "#<loc:pop>"
           str << '\n'
-          stack << :block
+          stack << nil
         when .block_end?
           string = token.value
+          line_number = token.line_number
+          column_number = token.column_number
+          suppress_trailing = token.suppress_trailing?
           token = lexer.next_token
+          suppress_trailing_whitespace(token, suppress_trailing)
+
+          str << "#<loc:push>"
+          append_loc(str, filename, line_number, column_number)
+          str << ' ' unless string.starts_with?(' ')
           str << string
+          str << "#<loc:pop>"
+
           str << '\n'
           str << "#{DefaultProcName}#{stack.size}"
           str << ".call("
@@ -135,5 +144,13 @@ module ECR
     str << ','
     str << column_number
     str << '>'
+  end
+
+  private def append_io_param(buffer, string, buffer_name)
+    if string =~ /\|\s*$/ 
+      buffer << string.gsub(BlockParamPattern, "\\1, #{buffer_name}|")
+    else
+      buffer << string.gsub(BlockPattern, "\\1 |#{buffer_name}|")
+    end
   end
 end

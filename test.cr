@@ -15,6 +15,7 @@ class Builder
   end
 end
 
+# using a block
 def form(etc, name, &block : Proc(Builder, IO, Nil))
   ->(io : IO) do 
     io << "<form etc='#{etc}' name='#{name}'>"
@@ -24,6 +25,7 @@ def form(etc, name, &block : Proc(Builder, IO, Nil))
   end
 end
 
+# escaping IO
 class HTMLEscapeIO < IO
   def initialize(@output : IO = IO::Memory.new); end
   
@@ -37,6 +39,17 @@ class HTMLEscapeIO < IO
   
   def to_s(io)
     @output.to_s(io)
+  end
+end
+
+# Using an intermediate string
+def upcase(&block : Proc(IO, Nil))
+  ->(io : IO) do
+    str = String.build do |sub_io|
+      block.call(sub_io)
+    end
+
+    io << str.upcase
   end
 end
 

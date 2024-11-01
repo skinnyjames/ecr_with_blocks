@@ -49,14 +49,17 @@ class ECR::Lexer
         next_char if suppress_leading
 
         case current_char
-        when '/'
-          next_char
-          copy_location_info_to_token
-          is_end_block = true
         when '|'
-          next_char
-          copy_location_info_to_token
-          is_block = true
+          if peek_next_char == '='
+            next_char
+            next_char
+            copy_location_info_to_token
+            is_block = true
+          else
+            next_char
+            copy_location_info_to_token
+            is_end_block = true
+          end
         when '='
           next_char
           copy_location_info_to_token
@@ -69,7 +72,7 @@ class ECR::Lexer
           copy_location_info_to_token
         end
 
-        return consume_control(is_output, is_escape, suppress_leading, is_block, is_end_block)
+        return consume_control(is_output, is_escape, is_block, is_end_block, suppress_leading)
       end
     else
       # consume string
@@ -102,7 +105,7 @@ class ECR::Lexer
     @token
   end
 
-  private def consume_control(is_output, is_escape, suppress_leading, is_block, is_end_block)
+  private def consume_control(is_output, is_escape, is_block, is_end_block, suppress_leading)
     start_pos = current_pos
     while true
       case current_char
